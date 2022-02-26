@@ -1,14 +1,27 @@
 const playwright = require('playwright');
 
-async function getItems() {
-    await getItem(0);
-    await getItem(1);
-    await getItem(2);
+export async function getCSV() {
+    let content = [];
+    let i = 0;
+    let erroredOut = false;
+
+    while(!erroredOut) {
+        try {
+            await getItem(i, 'nvidia');
+        } catch(e) {
+            erroredOut = true;
+        }
+        i++;
+    }
+
+    let csv = createCSV(content);
 }
 
-export default async function getItem(index) {
+export function createCSV(content) {}
+
+export async function getItem(index, query, browserType = 'chromium') {
     
-    const browser = await playwright['chromium'].launch();
+    const browser = await playwright[browserType].launch();
     const context = await browser.newContext();
     const page = await context.newPage();
     
@@ -19,7 +32,7 @@ export default async function getItem(index) {
     await page.locator('[aria-label="Search"]').click();
     
     // Fill Search bar
-    await page.locator('[aria-label="Search"]').fill('nvidia');
+    await page.locator('[aria-label="Search"]').fill(query);
     
     // Press Enter
     await Promise.all([
@@ -50,7 +63,7 @@ export default async function getItem(index) {
   
         //return to original search
         await page.goto(returnUrl);
-        console.log(obj);
+        return obj
       } catch (e) {
           console.log(e);
           throw new Error('No items found in search');
