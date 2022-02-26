@@ -1,25 +1,36 @@
 const playwright = require('playwright');
 
-export async function getCSV() {
+(async function getCSV() {
     let content = [];
-    let i = 0;
+    let i = 11;
     let erroredOut = false;
 
+    /*
     while(!erroredOut) {
+        let item;
         try {
-            await getItem(i, 'nvidia');
+            item = await getItem(i, 'nvidia');
         } catch(e) {
             erroredOut = true;
+
         }
+
+        if(item.price) content.push(item);
         i++;
     }
+*/
 
-    let csv = createCSV(content);
-}
+    let item;
+    item = await getItem(i, 'nvidia');
+    if(item.price) content.push(item);
+    console.log(content);
 
-export function createCSV(content) {}
+    return createCSV(content);
+})()
 
-export async function getItem(index, query, browserType = 'chromium') {
+function createCSV(content) {}
+
+async function getItem(index, query, browserType = 'chromium') {
     
     const browser = await playwright[browserType].launch();
     const context = await browser.newContext();
@@ -40,8 +51,6 @@ export async function getItem(index, query, browserType = 'chromium') {
       page.locator('[aria-label="Search"]').press('Enter')
     ]);
   
-    //URL for the search result
-    const returnUrl = page.url();
     let obj;
 
       try {
@@ -51,9 +60,17 @@ export async function getItem(index, query, browserType = 'chromium') {
           page.locator('img.s-image').nth(index).click()
         ]);
         
-        const title = await page.locator('#productTitle').textContent();
+        const title = await page.locator('title').textContent();
         console.log(title);
-        const price = await page.locator('#corePrice_feature_div').textContent();
+        
+        let price;
+        
+        try {
+            price = await page.locator('.apexPriceToPay:visible').last().textContent({timeout: 15000});
+        } catch(e) {
+            price = undefined;
+        }
+
         console.log(price);
         obj = {
           title,
@@ -62,10 +79,16 @@ export async function getItem(index, query, browserType = 'chromium') {
         }
   
         //return to original search
-        await page.goto(returnUrl);
+        await browser.close()
         return obj
       } catch (e) {
           console.log(e);
+          await browser.close()
           throw new Error('No items found in search');
       }    
+}
+
+module.exports = {
+    createCSV,
+    getItem
 }
