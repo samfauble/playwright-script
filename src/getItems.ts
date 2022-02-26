@@ -1,3 +1,1 @@
-export default function getItems(query: String) {
-
-}
+export default async function getItem() {}
