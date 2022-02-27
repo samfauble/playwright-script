@@ -3,39 +3,41 @@ const csvWriterCreator = require('csv-writer').createObjectCsvWriter;
 
 (async function getCSV() {
     let content = [];
-    let i = 20;
+    let i = 15;
     let erroredOut = false;
-    let query = `nvidia`;
+    let queries = ['nvidia 3060', 'nvidia 3070', 'nvidia 3080'];
     
-
-    while(!erroredOut) {
-        let item;
-        try {
-            item = await getItem(i, query);
-            
-            if(item.price) {
-                item.title = item.title.split(':')[1];
-
-                const priceStr = item.price.split('$')[1];
-                const string = priceStr.includes(',') ? priceStr.split(',').join('') : priceStr;
-                const priceFloat = parseFloat(string); 
-                item.price = priceFloat;
-                console.log(item)
-                content.push(item);
+    for(let q = 0; q < queries.length; q++) {
+        const query = queries[q];
+        while(!erroredOut) {
+            let item;
+            try {
+                item = await getItem(i, query);
+                
+                if(item.price) {
+                    item.title = item.title.split(':')[1];
+    
+                    const priceStr = item.price.split('$')[1];
+                    const string = priceStr.includes(',') ? priceStr.split(',').join('') : priceStr;
+                    const priceFloat = parseFloat(string); 
+                    item.price = priceFloat;
+                    console.log(item)
+                    content.push(item);
+                }
+            } catch(e) {
+                erroredOut = true;
             }
-        } catch(e) {
-            erroredOut = true;
+    
+            i++;
         }
-
-        i++;
-    }
-
-
-    content.sort((a, b) => { return a.price - b.price });
-    let res = content.length <= 3 ? content : content.slice(0, 3); 
-
-    console.log(res);
-    return await createCSV(res, query);
+    
+        i = 15;
+        content.sort((a, b) => { return a.price - b.price });
+        let res = content.length <= 3 ? content : content.slice(0, 3); 
+    
+        console.log(res);
+        await createCSV(res, query);
+    }   
 })()
 
 async function createCSV(content, query) {
