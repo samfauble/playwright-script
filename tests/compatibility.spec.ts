@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-let { getItem, createCSV } = require('../src/getItems');
+let { getItem, createCSV } = require('../src/main');
 
 test.beforeEach(async ({ page }) => {
 });
