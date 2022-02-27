@@ -3,30 +3,36 @@ const csvWriterCreator = require('csv-writer').createObjectCsvWriter;
 
 (async function getCSV() {
     let content = [];
-    let i = 11;
+    let i = 15;
     let erroredOut = false;
-    let query = `nvidia 10`;
-    /*
+    let query = `nvidia`;
+    
+
     while(!erroredOut) {
         let item;
         try {
-            item = await getItem(i, 'nvidia');
+            item = await getItem(i, query);
+            if(item.price) {
+                const priceStr = item.price.split('$')[1];
+                const string = priceStr.includes(',') ? priceStr.split(',').join('') : priceStr;
+                const priceFloat = parseFloat(string); 
+                item.price = priceFloat;
+                console.log(item)
+                content.push(item);
+            }
         } catch(e) {
             erroredOut = true;
-
         }
 
-        if(item.price) content.push(item);
         i++;
     }
-*/
 
-    let item;
-    item = await getItem(i, 'nvidia 10');
-    if(item.price) content.push(item);
-    console.log(content);
 
-    return createCSV(content, query);
+    content.sort((a, b) => { return a.price - b.price });
+    let res = content.length <= 3 ? content : content.slice(0, 3); 
+
+    console.log(res);
+    return await createCSV(res, query);
 })()
 
 async function createCSV(content, query) {
@@ -74,17 +80,14 @@ async function getItem(index, query, browserType = 'chromium') {
         ]);
         
         const title = await page.locator('title').textContent();
-        console.log(title);
         
         let price;
-        
         try {
             price = await page.locator('.apexPriceToPay:visible').last().textContent({timeout: 15000});
         } catch(e) {
             price = undefined;
         }
 
-        console.log(price);
         obj = {
           title,
           price,
