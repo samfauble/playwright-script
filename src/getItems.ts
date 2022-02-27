@@ -3,7 +3,7 @@ const csvWriterCreator = require('csv-writer').createObjectCsvWriter;
 
 (async function getCSV() {
     let content = [];
-    let i = 15;
+    let i = 20;
     let erroredOut = false;
     let query = `nvidia`;
     
@@ -12,7 +12,10 @@ const csvWriterCreator = require('csv-writer').createObjectCsvWriter;
         let item;
         try {
             item = await getItem(i, query);
+            
             if(item.price) {
+                item.title = item.title.split(':')[1];
+
                 const priceStr = item.price.split('$')[1];
                 const string = priceStr.includes(',') ? priceStr.split(',').join('') : priceStr;
                 const priceFloat = parseFloat(string); 
@@ -88,10 +91,12 @@ async function getItem(index, query, browserType = 'chromium') {
             price = undefined;
         }
 
+        const date = new Date(Date.now()).toLocaleString('en-GB', { timeZone: 'UTC' }).split(',')[0];
+
         obj = {
           title,
           price,
-          date: Date.now()
+          date 
         }
   
         //return to original search
