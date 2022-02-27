@@ -1,18 +1,14 @@
 const playwright = require('playwright');
-const csvWriterCreator = require('csv-writer').createObjectCsvWriter;
-var { isMainThread, workerData, parentPort } = require('worker_threads');
+const { isMainThread, workerData, parentPort } = require('worker_threads');
 const worker = require('worker_threads').Worker;
+const { pause, stringParser, toCSV } = require('./helpers.ts');
 
-
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 (async function main() {
     if(isMainThread) {
         return new Promise(async (resolve, reject) => {
             for(let i = 0; i < 3; i++) {
-                await sleep(3000);
+                await pause(3000);
                let thread = new worker(__filename, {
                    workerData: i
                });
@@ -44,16 +40,9 @@ function sleep(ms) {
     }
 })();
 
-function parseString(str) {
-    const priceStr = str.split('$')[1];
-    const string = priceStr.includes(',') ? priceStr.split(',').join('') : priceStr;
-    const priceFloat = parseFloat(string); 
-    return priceFloat;
-}
-
 async function getCSV(query) {
     let content = [];
-    let i = 0;
+    let i = 19;
     let erroredOut = false;
     
     while(!erroredOut) {
@@ -62,8 +51,7 @@ async function getCSV(query) {
             item = await getItem(i, query);
             
             if(item.price) {
-                item.title = item.title.split(':')[1];
-                item.price = parseString(item.price);
+                item.price = stringParser(item.price);
                 content.push(item);
             }
         } catch(e) {
@@ -73,24 +61,10 @@ async function getCSV(query) {
         i++;
     }
     
-    i = 0;
+    i = 19;
     content.sort((a, b) => { return a.price - b.price });
     let res = content.length <= 3 ? content : content.slice(0, 3); 
-    await createCSV(res, query); 
-}
-
-async function createCSV(content, query) {
-    const csvWriter = csvWriterCreator({
-        path: `../outputCsv/${query}_search.csv`,
-        header: [
-            {id: 'title', title: 'TITLE'},
-            {id: 'price', title: 'PRICE'},
-            {id: 'date', title: 'DATE'}
-        ]
-    });
-
-    await csvWriter.writeRecords(content);
-    console.log('CSV document has been written to folder outputCsv');
+    await toCSV(res, query); 
 }
 
 async function getItem(index, query, browserType = 'chromium') {
@@ -124,7 +98,7 @@ async function getItem(index, query, browserType = 'chromium') {
         page.locator('img.s-image').nth(index).click()
       ]);
       
-      const title = await page.locator('title').textContent();
+      const url = page.url();
       
       let price;
       try {
@@ -136,9 +110,9 @@ async function getItem(index, query, browserType = 'chromium') {
                     .toLocaleString('en-GB', { timeZone: 'UTC' })
                     .split(',')[0];
       obj = {
-        title,
         price,
-        date 
+        date,
+        url
       };
 
       //return to original search
@@ -152,6 +126,5 @@ async function getItem(index, query, browserType = 'chromium') {
 }
 
 module.exports = {
-    createCSV,
     getItem
 }
