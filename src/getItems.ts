@@ -1,10 +1,11 @@
 const playwright = require('playwright');
+const csvWriterCreator = require('csv-writer').createObjectCsvWriter;
 
 (async function getCSV() {
     let content = [];
     let i = 11;
     let erroredOut = false;
-
+    let query = `nvidia 10`;
     /*
     while(!erroredOut) {
         let item;
@@ -21,14 +22,26 @@ const playwright = require('playwright');
 */
 
     let item;
-    item = await getItem(i, 'nvidia');
+    item = await getItem(i, 'nvidia 10');
     if(item.price) content.push(item);
     console.log(content);
 
-    return createCSV(content);
+    return createCSV(content, query);
 })()
 
-function createCSV(content) {}
+async function createCSV(content, query) {
+    const csvWriter = csvWriterCreator({
+        path: `../outputCsv/${query}_search.csv`,
+        header: [
+            {id: 'title', title: 'TITLE'},
+            {id: 'price', title: 'PRICE'},
+            {id: 'date', title: 'DATE'}
+        ]
+    });
+
+    await csvWriter.writeRecords(content);
+    console.log('CSV document is written');
+}
 
 async function getItem(index, query, browserType = 'chromium') {
     
