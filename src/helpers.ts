@@ -1,7 +1,18 @@
 const csvWriterCreator = require('csv-writer').createObjectCsvWriter;
 
+type Item = {
+    price: number,
+    url: string,
+    date: string
+}
+
 function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function sortContent(content: Array<Item>) {
+    content.sort((a, b) => { return a.price - b.price });
+    return content.length <= 3 ? content : content.slice(0, 3); 
 }
 
 function parseString(str: string) {
@@ -29,4 +40,5 @@ module.exports = {
     pause: sleep,
     stringParser: parseString,
     toCSV: createCSV,
+    sortByPrice: sortContent
 }

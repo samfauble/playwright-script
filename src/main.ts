@@ -1,7 +1,7 @@
 const playwright = require('playwright');
 const { isMainThread, workerData, parentPort } = require('worker_threads');
 const worker = require('worker_threads').Worker;
-const { pause, stringParser, toCSV } = require('./helpers');
+const { pause, stringParser, toCSV, sortByPrice } = require('./helpers');
 
 
 (async function main() {
@@ -62,8 +62,7 @@ async function getCSV(query: string) {
     }
     
     i = 19;
-    content.sort((a, b) => { return a.price - b.price });
-    let res = content.length <= 3 ? content : content.slice(0, 3); 
+    let res = sortByPrice(content);
     await toCSV(res, query); 
 }
 
