@@ -38,16 +38,31 @@ var csvWriterCreator = require('csv-writer').createObjectCsvWriter;
 function sleep(ms) {
     return new Promise(function (resolve) { return setTimeout(resolve, ms); });
 }
+/**
+ * Sorts the query results by price
+ * @param content
+ * @returns
+ */
 function sortContent(content) {
     content.sort(function (a, b) { return a.price - b.price; });
     return content.length <= 3 ? content : content.slice(0, 3);
 }
+/**
+ * Converts the item price from a string to a float
+ * @param str
+ * @returns
+ */
 function parseString(str) {
     var priceStr = str.split('$')[1];
     var string = priceStr.includes(',') ? priceStr.split(',').join('') : priceStr;
     var priceFloat = parseFloat(string);
     return priceFloat;
 }
+/**
+ * Exports the results to a CSV file
+ * @param content
+ * @param query
+ */
 function createCSV(content, query) {
     return __awaiter(this, void 0, void 0, function () {
         var csvWriter;
@@ -55,7 +70,7 @@ function createCSV(content, query) {
             switch (_a.label) {
                 case 0:
                     csvWriter = csvWriterCreator({
-                        path: "../outputCsv/".concat(query, "_search.csv"),
+                        path: "./outputCsv/".concat(query, "_search.csv"),
                         header: [
                             { id: 'price', title: 'PRICE' },
                             { id: 'date', title: 'DATE' },
