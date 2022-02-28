@@ -1,7 +1,7 @@
 const playwright = require('playwright');
 const { isMainThread, workerData, parentPort } = require('worker_threads');
 const worker = require('worker_threads').Worker;
-const { pause, stringParser, toCSV, sortByPrice } = require('./helpers');
+var { pause, stringParser, toCSV, sortByPrice } = require('./helpers');
 
 
 (async function main() {
