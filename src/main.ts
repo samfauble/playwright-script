@@ -22,7 +22,8 @@ var { pause, stringParser, toCSV, sortByPrice } = require('./helpers');
             }
         });
     } else {
-        console.log(workerData)
+        let num = workerData + 1;
+        console.log(`Worker thread number ${num} has been spawned`);
         switch(workerData) {
             case 0:
                 await getCSV('nvidia 3060');
